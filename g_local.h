@@ -311,7 +311,10 @@ typedef struct
 
 	int			total_goals;
 	int			found_goals;
-
+	int			wave_number;//keeps track of wave number in my mod
+	int         monsters_remaining; // the number of monster left in the wave, need to track wave status
+	int			monsters_spawned;// keeps a tally of the number spawned by my mod
+	int			monsters_killed; // to track the number of monsters killed in my mod 
 	int			total_monsters;
 	int			killed_monsters;
 
@@ -825,6 +828,7 @@ typedef struct
 
 	int			selected_item;
 	int			inventory[MAX_ITEMS];
+	
 
 	// ammo capacities
 	int			max_bullets;
@@ -849,6 +853,13 @@ typedef struct
 // client data that stays across deathmatch respawns
 typedef struct
 {
+	//int			wave_number;  // tracks the number of waves, wanted to put it in the local levle stuct but since levels are passed from the engine editing the struct made some wierd bugs
+	int			experience;	// tracks the player's experience points
+	int			lvl;		//tracks the player's level
+	int			upgrades[8][3][2];	//tracks the player's upgrade purchases
+	int			speedmod;
+	int			jumpmod;
+	int			damagemod;
 	client_persistant_t	coop_respawn;	// what to set client->pers to on a respawn
 	int			enterframe;			// level.framenum the client entered the game
 	int			score;				// frags, etc

@@ -304,8 +304,144 @@ void Cmd_God_f (edict_t *ent)
 
 	gi.cprintf (ent, PRINT_HIGH, msg);
 }
+// proto type to avoid error, should be in header but oh well
+void start_Wave(edict_t *timer);
+
+void spawn_monsters(edict_t *wave){
+		edict_t *timer;
+		edict_t *monster;
+		int i,n, rando;
+		vec3_t	spawns[20];
+		//nasty hardcoded vector array of possible spawn points
+		spawns[0][0]=9823;
+		spawns[0][1]=5343;
+		spawns[0][2]=3777;
+		spawns[1][0]=6320;
+		spawns[1][1]=2;
+		spawns[1][2]=5313;
+		spawns[2][0]=15878;
+		spawns[2][1]=3983;
+		spawns[2][2]=3265;
+		
 
 
+	if(level.monsters_remaining<=0){
+		gi.bprintf(PRINT_MEDIUM,"%s","wave completed");
+		level.wave_number++;
+		timer=G_Spawn();
+		
+		timer->takedamage=DAMAGE_NO;
+		timer->movetype=MOVETYPE_NONE;
+		timer->solid = SOLID_NOT;
+		VectorClear(timer->s.origin);
+		VectorClear(timer->mins);
+		VectorClear(timer->maxs);
+		timer->think=start_Wave;
+		timer->nextthink=level.time + 20;
+		gi.linkentity(timer);
+		G_FreeEdict(wave);
+	}else{
+		
+			if(level.wave_number%5 == 0)//spawn mini bosses
+			{
+			}
+			else if(level.wave_number%10 == 0)// spawn boss
+			{
+			}
+			else //other wise spawn 
+			{
+				i=random()*(level.monsters_remaining/4);
+				for(n=1;n<=i;n++)
+				{
+					rando = random()*10;
+						switch(rando)
+							{
+							case 1:
+							;
+							case 2:
+							;
+							case 3:
+							;
+							case 4:
+							;
+							case 5:
+							;
+							case 6:
+							;
+							case 7:
+							;
+							case 8:
+							;
+							case 9:
+							;
+							case 0:
+							;
+							default:
+							;
+							}
+			
+				}
+			}
+		
+		wave->nextthink= level.time+10;
+	}
+	
+		
+}
+// is my timer's think function, when time is up it starts the wave,
+void start_Wave(edict_t *timer){
+	edict_t *wave;
+	gi.bprintf(PRINT_MEDIUM,"%s %d","starting wave :", level.wave_number);
+    level.monsters_remaining = 10*level.wave_number ;
+	level.monsters_spawned =0;
+	wave=G_Spawn();
+		
+		
+		wave->takedamage=DAMAGE_NO;
+		wave->movetype=MOVETYPE_NONE;
+		wave->solid = SOLID_NOT;
+		VectorClear(wave->s.origin);
+		VectorClear(wave->mins);
+		VectorClear(wave->maxs);
+		wave->think=spawn_monsters;
+		wave->nextthink=level.time + 1;
+		gi.linkentity(wave);
+	G_FreeEdict(timer);
+}
+  void Cmd_Compass_f (edict_t *ent) 
+
+  { 
+
+   gi.cprintf (ent, PRINT_HIGH, "%d %d %d \n",ent->client->ps.pmove.origin[0], ent->client->ps.pmove.origin[1], 
+
+  ent->client->ps.pmove.origin[2]);  //should be one line 
+
+  }
+  //kicks off the first wave of enemies
+void Cmd_Startwave (edict_t *ent){
+        edict_t *timer;
+	if(level.wave_number){
+	    gi.bprintf(PRINT_MEDIUM,"%s","game already started ");
+		return;
+	}
+	else
+	{
+		gi.bprintf(PRINT_MEDIUM,"%s","starting first wave in 20 seconds");
+		level.wave_number = 1;
+		timer=G_Spawn();
+		
+		timer->activator=ent;  // Link to player
+		timer->takedamage=DAMAGE_NO;
+		timer->movetype=MOVETYPE_NONE;
+		timer->solid = SOLID_NOT;
+		VectorClear(timer->s.origin);
+		VectorClear(timer->mins);
+		VectorClear(timer->maxs);
+		timer->think=start_Wave;
+		timer->nextthink=level.time + 20;
+		gi.linkentity(timer);
+	}
+}
 /*
 ==================
 Cmd_Notarget_f
@@ -855,6 +991,7 @@ void Cmd_PlayerList_f(edict_t *ent)
 	int i;
 	char st[80];
 	char text[1400];
+
 	edict_t *e2;
 
 	// connect time, ping, score, name
@@ -964,8 +1101,10 @@ void ClientCommand (edict_t *ent)
 		Cmd_Kill_f (ent);
 	else if (Q_stricmp (cmd, "putaway") == 0)
 		Cmd_PutAway_f (ent);
-	else if (Q_stricmp (cmd, "wave") == 0)
-		Cmd_Wave_f (ent);
+	else if (Q_stricmp (cmd, "wavestart") == 0)
+		Cmd_Startwave (ent);
+	else if (Q_stricmp (cmd, "compass") == 0) 
+		Cmd_Compass_f (ent); 
 	else if (Q_stricmp(cmd, "playerlist") == 0)
 		Cmd_PlayerList_f(ent);
 	else	// anything that doesn't match a command will be a chat
