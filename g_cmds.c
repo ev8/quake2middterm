@@ -305,7 +305,7 @@ void Cmd_God_f (edict_t *ent)
 	gi.cprintf (ent, PRINT_HIGH, msg);
 }
 // proto type to avoid error, should be in header but oh well
-void start_Wave(edict_t *timer);
+void start_Wave(edict_t *timer);//as pointed out already, yes, functions in C should have thier prototype in the header
 int findSafeSpawn(edict_t *monster){
 	int i;
 	trace_t tr;
@@ -337,8 +337,17 @@ void spawn_monsters(edict_t *wave){
 		edict_t *monster;
 		int i,n, rando;
 		vec3_t	spawns[20];
+		/*
+		gi.centerprintf(player entity, message) could have been used as well to display the
+		message on the center of the player's vision on a large portion of the screen
+		*/
 		gi.bprintf(PRINT_MEDIUM,"%s","spawning monsters");
 		//nasty hardcoded vector array of possible spawn points
+		/*
+		Hard coded position are fine. In a more in depth project, a spawn position finder could
+		be used for balance purposes so player's couldn't exploit the monsters by standing behind the 
+		spawnpoint to get the bonus damage from "surprising" some monsters
+		*/
 		spawns[0][0]=1217.75;
 		spawns[0][1]=685.75;
 		spawns[0][2]=972.125;
@@ -351,7 +360,9 @@ void spawn_monsters(edict_t *wave){
 		
 			
 			
-	
+	    /*
+			Great use of variables. No suggested improvements here
+		*/
 
 		if(level.monsters_killed>=level.monsters_remaining)
 		{
@@ -371,7 +382,7 @@ void spawn_monsters(edict_t *wave){
 			gi.linkentity(timer);
 			G_FreeEdict(wave);
 		}else{
-		
+			//Cool idea. Good implementation. Especially the AI check and health multiplier
 			 if(level.wave_number%10 == 0)// spawn boss
 			{
 				monster=G_Spawn();
@@ -389,7 +400,7 @@ void spawn_monsters(edict_t *wave){
 				for(n=0;n<i;n++)
 				{
 					monster = G_Spawn();
-					rando = random()*10;
+					rando = random()*10;//random monster spawn, cool idea
 						switch(rando)
 							{
 							case 1:
@@ -436,7 +447,7 @@ void spawn_monsters(edict_t *wave){
 				 {	 gi.linkentity(monster);
 					level.monsters_spawned++;
 				}else{
-					G_FreeEdict(monster);
+					G_FreeEdict(monster);//good check, very important part that could cause problems if left out
 				}
 				}
 			}
