@@ -1118,7 +1118,6 @@ typedef enum
 typedef struct entity_state_s
 {
 	int		number;			// edict index
-
 	vec3_t	origin;
 	vec3_t	angles;
 	vec3_t	old_origin;		// for lerping

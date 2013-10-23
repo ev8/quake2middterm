@@ -310,25 +310,19 @@ int findSafeSpawn(edict_t *monster){
 	int i;
 	trace_t tr;
 
-        for (i = 0;i < 10;i++)
-        {
+       
                 tr = gi.trace(monster->s.origin,monster->mins,monster->maxs,monster->s.origin,monster,MASK_SHOT);
                 if (tr.fraction < 1)
                 {
-                        VectorAdd(tr.plane.normal,monster->s.origin,monster->s.origin);
-                }
+                        return 0;
+				}
                 else
                 {
-                        break;
+                        return 1;
                 }
-        }
-        if (i == 10)
-        {
-                return 0;
-        }
-		else{
-		return 1;
-		}
+        
+      
+		
 }
 
 
@@ -336,6 +330,7 @@ void spawn_monsters(edict_t *wave){
 		edict_t *timer;
 		edict_t *monster;
 		int i,n, rando;
+		vec3_t temp,look;
 		vec3_t	spawns[20];
 		/*
 		gi.centerprintf(player entity, message) could have been used as well to display the
@@ -350,14 +345,37 @@ void spawn_monsters(edict_t *wave){
 		*/
 		spawns[0][0]=1217.75;
 		spawns[0][1]=685.75;
-		spawns[0][2]=972.125;
+		spawns[0][2]=673;
 		spawns[1][0]=167.375;
 		spawns[1][1]=747;
-		spawns[1][2]=972.125;
-		spawns[2][0]=1582.88;
+		spawns[1][2]=572.125;
+		spawns[2][0]=1182.88;
 		spawns[2][1]=958.5;
-		spawns[2][2]=1548.13;
-		
+		spawns[2][2]=1100.13;
+		spawns[3][0]=787.75;
+		spawns[3][1]=1387.88;
+		spawns[3][2]=1092.125;
+		spawns[4][0]=888.75;
+		spawns[4][1]=641.75;
+		spawns[4][2]=452.125;
+		spawns[5][0]=1569.5;
+		spawns[5][1]=691.625;
+		spawns[5][2]=636.125;
+		spawns[6][0]=1284;
+		spawns[6][1]=16;
+		spawns[6][2]=665;
+		spawns[7][0]=620;
+		spawns[7][1]=352;
+		spawns[7][2]=793;
+		spawns[8][0]=528;
+		spawns[8][1]=992;
+		spawns[8][2]=793;
+		spawns[9][0]=1318;
+		spawns[9][1]=1604;
+		spawns[9][2]=857;
+		spawns[10][0]=10;
+		spawns[10][1]=4104;
+		spawns[10][2]=670;
 			
 			
 	    /*
@@ -383,76 +401,154 @@ void spawn_monsters(edict_t *wave){
 			G_FreeEdict(wave);
 		}else{
 			//Cool idea. Good implementation. Especially the AI check and health multiplier
-			 if(level.wave_number%10 == 0)// spawn boss
+			 
+			 //otherwise spawn chaff
+				if((level.wave_number%10 == 0)&&(level.monsters_spawned<1))// spawn boss
 			{
+
+				if(level.monsters_spawned<level.monsters_remaining){
 				monster=G_Spawn();
-				rando = random()*2;
+				rando = (random()*11)-1 ;
 				VectorCopy(spawns[rando],monster->s.origin);
-				SP_monster_supertank(monster);
+				rando=random()*3;
+				switch (rando)
+				{
+					case 1:
+						SP_monster_supertank(monster);
+						break;
+					case 2:
+						SP_monster_jorg(monster);
+						break;
+					case 3:
+						SP_monster_boss3_stand(monster);
+						break;
+					default:
+						break;
+				}
+				
 
 				monster->health+= level.wave_number*100;
 				 monster->monsterinfo.aiflags |= (AI_BRUTAL&AI_PURSUE_NEXT);
-				gi.linkentity(monster);
+				 rando=findSafeSpawn(monster);
+				 while (rando==1){ //makes sure a boss spawns on first call
+					rando = (random()*11)-1 ;
+					VectorCopy(spawns[rando],monster->s.origin);
+					 rando=findSafeSpawn(monster);
+				 }
+				 gi.linkentity(monster);
+					level.monsters_spawned++;
+				}
 			}
-			else //otherwise spawn chaff
-			{
 				i=((level.monsters_remaining-level.monsters_spawned)/4);
+				if (i==0)
+				{
+					i=((level.monsters_remaining-level.monsters_spawned)%4);
+				}
 				for(n=0;n<i;n++)
 				{
 					monster = G_Spawn();
-					rando = random()*10;//random monster spawn, cool idea
+					rando = random()*12;//random monster spawn, cool idea
+						
+						if (level.wave_number%12 <6)
+						{rando=rando/2;}
+
+						gi.bprintf(PRINT_MEDIUM,"%s %d /n","rando",rando);	
 						switch(rando)
 							{
 							case 1:
-								gi.bprintf(PRINT_MEDIUM,"%s","spawning gunner");
-								SP_monster_gunner(monster);
+								{
+									gi.bprintf(PRINT_MEDIUM,"%s","spawning flyer");
+									SP_monster_flyer(monster);
+									break;
+								}
 							case 2:
-								gi.bprintf(PRINT_MEDIUM,"%s","spawning glad");
-								SP_monster_gladiator(monster);							;
+								{
+									gi.bprintf(PRINT_MEDIUM,"%s","spawning soldier");
+									SP_monster_soldier_light(monster);							;
+									break;
+								}
 							case 3:
-								gi.bprintf(PRINT_MEDIUM,"%s","spawning tank");
-								SP_monster_tank(monster);	
-							;
+								{
+									gi.bprintf(PRINT_MEDIUM,"%s","spawning sssoldier");
+									SP_monster_soldier_ss(monster);	
+									break;
+								}
 							case 4:
+								{
 								gi.bprintf(PRINT_MEDIUM,"%s","spawning gunner");
-								SP_monster_gunner(monster);
-							
+								SP_monster_infantry(monster);
+								break;
+								}
 							case 5:
-								gi.bprintf(PRINT_MEDIUM,"%s","spawning medi");
-								SP_monster_medic(monster);
-								
+								{
+								gi.bprintf(PRINT_MEDIUM,"%s","spawning flyer2");
+								SP_monster_soldier(monster);
+								break;
+								}
 							case 6:
-								gi.bprintf(PRINT_MEDIUM,"%s","spawning chick");
-								SP_monster_chick(monster);
-							
+								{
+								//gi.bprintf(PRINT_MEDIUM,"%s","spawning chick");
+								SP_monster_hover(monster);
+								break;
+								}
 							case 7:
-								gi.bprintf(PRINT_MEDIUM,"%s","spawning gunner");
-								SP_monster_gunner(monster);
+								{
+								//gi.bprintf(PRINT_MEDIUM,"%s","spawning gunner");
+								
+									SP_monster_chick(monster);
+								break;
+								}
 							case 8:
-								gi.bprintf(PRINT_MEDIUM,"%s","spawning gunner");
-								SP_monster_gunner(monster);
+								{
+								//gi.bprintf(PRINT_MEDIUM,"%s","spawning gunner");
+								SP_monster_medic(monster);
+								break;
+								}
 							case 9:
-								gi.bprintf(PRINT_MEDIUM,"%s","spawning lgt soldier");
-								SP_monster_soldier_light(monster);
+								{
+								//gi.bprintf(PRINT_MEDIUM,"%s","spawning lgt soldier");
+								SP_monster_brain(monster);
+								break;
+								}
+							case 11:
+								{
+								//gi.bprintf(PRINT_MEDIUM,"%s","spawning lgt soldier");
+								SP_monster_parasite(monster);
+								break;
+								}
+							case 12:
+								{
+								//gi.bprintf(PRINT_MEDIUM,"%s","spawning lgt soldier");
+								SP_monster_tank(monster);
+								break;
+								}
+							
 							default:
-								gi.bprintf(PRINT_MEDIUM,"%s","spawning ss soldier");
-								SP_monster_soldier_ss(monster);
+								gi.bprintf(PRINT_MEDIUM,"%s","defaults spawn tank");
+									SP_monster_berserk(monster);
+								break;
 							}
-						rando = random()*3;
+						rando = (random()*10)-1;
+						//temp[YAW]=random()*360;
+						//AngleVectors(temp,look,NULL,NULL);
+						monster->s.angles[YAW]=random()*360;
 						VectorCopy(spawns[rando],monster->s.origin);
-						monster->health+= level.wave_number*100;
+						monster->health+= level.wave_number*5;
 				 monster->monsterinfo.aiflags |= (AI_BRUTAL&AI_PURSUE_NEXT);
 				rando=findSafeSpawn(monster);
 				 if(rando==1)
-				 {	 gi.linkentity(monster);
+				 {	 
+					 
+					 gi.linkentity(monster);
 					level.monsters_spawned++;
+					
 				}else{
 					G_FreeEdict(monster);//good check, very important part that could cause problems if left out
 				}
 				}
-			}
+			
 		
-		wave->nextthink= level.time+2;
+		wave->nextthink= level.time+10;
 	}
 	
 		
@@ -461,9 +557,7 @@ void spawn_monsters(edict_t *wave){
 void start_Wave(edict_t *timer){
 	edict_t *wave;
 	gi.bprintf(PRINT_MEDIUM,"%s %d","starting wave :", level.wave_number);
-	if(level.wave_number %10==0)// boss wave
-		level.monsters_remaining=1;
-	else
+	
 		level.monsters_remaining = 10*level.wave_number ;
 		level.monsters_spawned =0;
 		level.monsters_killed=0;
@@ -488,17 +582,17 @@ void start_Wave(edict_t *timer){
   spawn[0] = 1217.75;
   spawn[1] = 685.75;
   spawn[2] = 472.125;
-	monster=G_Spawn();
-	VectorCopy(spawn,monster->s.origin);
-				SP_monster_medic(monster);
+	//monster=G_Spawn();
+	//VectorCopy(spawn,monster->s.origin);
+				//SP_monster_medic(monster);
 
-				monster->health+= level.wave_number*100;
-				 monster->monsterinfo.aiflags |= (AI_BRUTAL&AI_PURSUE_NEXT);
-				gi.linkentity(monster);
+				//monster->health+= level.wave_number*100;
+				// monster->monsterinfo.aiflags |= (AI_BRUTAL&AI_PURSUE_NEXT);
+				//gi.linkentity(monster);
 
-				gi.cprintf (ent, PRINT_HIGH, "%g %g %g %s %d %s %d %s %d\n",ent->s.origin[0], ent->s.origin[1], 
+				gi.cprintf (ent, PRINT_HIGH, "%g %g %g %s %d %s %d %s %d %s %d\n",ent->s.origin[0], ent->s.origin[1], 
 
-					ent->s.origin[2],"remaining",level.monsters_remaining,"spawned",level.monsters_spawned,"wave",level.wave_number);  //should be one line 
+					ent->s.origin[2],"remaining",level.monsters_remaining,"spawned",level.monsters_spawned,"wave",level.wave_number, " killed",level.monsters_killed);  //should be one line 
 
   }
   //kicks off the first wave of enemies
@@ -522,7 +616,7 @@ void Cmd_Startwave (edict_t *ent){
 		VectorClear(timer->mins);
 		VectorClear(timer->maxs);
 		timer->think=start_Wave;
-		timer->nextthink=level.time + 1;
+		timer->nextthink=level.time + 20;
 		gi.linkentity(timer);
 	}
 }

@@ -480,10 +480,10 @@ qboolean FindTarget (edict_t *self)
 		if (client->light_level <= 5)
 			return false;
 
-		if (!visible (self, client))
+		/*if (!visible (self, client))
 		{
 			return false;
-		}
+		}*/
 
 		if (r == RANGE_NEAR)
 		{
@@ -494,10 +494,10 @@ qboolean FindTarget (edict_t *self)
 		}
 		else if (r == RANGE_MID)
 		{
-			if (!infront (self, client))
-			{
-				return false;
-			}
+			//if (!infront (self, client))
+			//{
+			//	return false;
+			//}
 		}
 
 		self->enemy = client;
@@ -523,8 +523,8 @@ qboolean FindTarget (edict_t *self)
 
 		if (self->spawnflags & 1)
 		{
-			if (!visible (self, client))
-				return false;
+			//if (!visible (self, client))
+			//	return false;
 		}
 		else
 		{

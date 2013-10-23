@@ -854,7 +854,7 @@ typedef struct
 typedef struct
 {
 	//int			wave_number;  // tracks the number of waves, wanted to put it in the local levle stuct but since levels are passed from the engine editing the struct made some wierd bugs
-	int			experience;	// tracks the player's experience points
+	int			exp;	// tracks the player's experience points
 	int			lvl;		//tracks the player's level
 	int			upgrades[8][3][2];	//tracks the player's upgrade purchases
 	int			speedmod;
