@@ -11,3 +11,4 @@ use [ ] to navigate the menu and enter to select an option.
 
 every tenth wave is a boss with really hard enemies and one super powered boss enemy
 
+the spawning in my mod is unfortunately hard coded for the edge deathmatch map
