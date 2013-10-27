@@ -311,6 +311,7 @@ typedef struct
 
 	int			total_goals;
 	int			found_goals;
+	int			boss_spawned;
 	int			wave_number;//keeps track of wave number in my mod
 	int         monsters_remaining; // the number of monster left in the wave, need to track wave status
 	int			monsters_spawned;// keeps a tally of the number spawned by my mod
@@ -856,8 +857,11 @@ typedef struct
 	//int			wave_number;  // tracks the number of waves, wanted to put it in the local levle stuct but since levels are passed from the engine editing the struct made some wierd bugs
 	int			exp;	// tracks the player's experience points
 	int			lvl;		//tracks the player's level
-	int			upgrades[8][3][2];	//tracks the player's upgrade purchases
+	int			upgrades[8][2];	//tracks the player's upgrade purchases
+
+	int			ap;
 	int			speedmod;
+	int			kickmod;
 	int			jumpmod;
 	int			damagemod;
 	client_persistant_t	coop_respawn;	// what to set client->pers to on a respawn
@@ -885,6 +889,24 @@ struct gclient_s
 	qboolean	showinventory;		// set layout stat
 	qboolean	showhelp;
 	qboolean	showhelpicon;
+
+   qboolean showmenu;	// Is the menu being shown
+   qboolean showmsg;		// Is a message box being shown
+
+   int	menu_choice;		// What's the current choice
+   int	menu_item_count;	// how many items in the menu
+
+   char *menu_title; 		// the title for the menu
+   char *menu_items[11];	// The item descriptions
+
+
+
+   // Holds a pointer to the menu selection handler for this player
+
+   void (*usr_menu_sel)(edict_t *ent, int choice); 
+
+
+
 
 	int			ammo_index;
 
@@ -986,7 +1008,8 @@ struct edict_s
 
 	// DO NOT MODIFY ANYTHING ABOVE THIS, THE SERVER
 	// EXPECTS THE FIELDS IN THAT ORDER!
-
+	int mtype;
+	int			animation;
 	//================================
 	int			movetype;
 	int			flags;

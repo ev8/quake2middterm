@@ -1,6 +1,6 @@
 #include "g_local.h"
 #include "m_player.h"
-
+#include "q_devels.h"
 
 char *ClientTeam (edict_t *ent)
 {
@@ -46,10 +46,16 @@ qboolean OnSameTeam (edict_t *ent1, edict_t *ent2)
 
 void SelectNextItem (edict_t *ent, int itflags)
 {
+	
+
 	gclient_t	*cl;
 	int			i, index;
 	gitem_t		*it;
-
+   if (ent->client->showmenu)
+   {
+     Menu_Dn(ent);
+     return;
+   }
 	cl = ent->client;
 
 	if (cl->chase_target) {
@@ -78,12 +84,18 @@ void SelectNextItem (edict_t *ent, int itflags)
 
 void SelectPrevItem (edict_t *ent, int itflags)
 {
+	
+
 	gclient_t	*cl;
 	int			i, index;
 	gitem_t		*it;
 
 	cl = ent->client;
-
+	if (ent->client->showmenu)
+   {
+     Menu_Up(ent);
+     return;
+   }
 	if (cl->chase_target) {
 		ChasePrev(ent);
 		return;
@@ -324,70 +336,140 @@ int findSafeSpawn(edict_t *monster){
       
 		
 }
+/*scans all entities in game and kills all monsters, used when all the player have died*/
+void killmonsters(){
+	int i;
+	edict_t		*cl_ent;
 
-
+	for (i=0 ; i<game.maxentities ; i++)
+			{
+				cl_ent=g_edicts + 1 + i;
+				if(cl_ent->svflags & SVF_MONSTER)
+				{
+					G_FreeEdict(cl_ent);
+				}
+			}
+}
+/*spawns monsters up until the wave limit, using a randomly selected hard coded spawnpoint and a random monster type and attempts to spawn it
+every 10th wave theres a chance a boss might spawn,the first 6 out of every 10 waves spawns easy monsters, the rest spawn harder ones
+evey wave monster get more health and do slightly more damage
+*/
 void spawn_monsters(edict_t *wave){
 		edict_t *timer;
 		edict_t *monster;
 		int i,n, rando;
 		vec3_t temp,look;
 		vec3_t	spawns[20];
+		edict_t		*cl_ent;
+		//gi.bprintf(PRINT_MEDIUM,"%s","variables spawn");
 		/*
 		gi.centerprintf(player entity, message) could have been used as well to display the
 		message on the center of the player's vision on a large portion of the screen
 		*/
-		gi.bprintf(PRINT_MEDIUM,"%s","spawning monsters");
+		//gi.bprintf(PRINT_MEDIUM,"%s","spawning monsters");
 		//nasty hardcoded vector array of possible spawn points
 		/*
 		Hard coded position are fine. In a more in depth project, a spawn position finder could
 		be used for balance purposes so player's couldn't exploit the monsters by standing behind the 
 		spawnpoint to get the bonus damage from "surprising" some monsters
 		*/
-		spawns[0][0]=1217.75;
-		spawns[0][1]=685.75;
-		spawns[0][2]=673;
-		spawns[1][0]=167.375;
-		spawns[1][1]=747;
-		spawns[1][2]=572.125;
-		spawns[2][0]=1182.88;
-		spawns[2][1]=958.5;
-		spawns[2][2]=1100.13;
-		spawns[3][0]=787.75;
-		spawns[3][1]=1387.88;
-		spawns[3][2]=1092.125;
-		spawns[4][0]=888.75;
-		spawns[4][1]=641.75;
-		spawns[4][2]=452.125;
-		spawns[5][0]=1569.5;
-		spawns[5][1]=691.625;
-		spawns[5][2]=636.125;
-		spawns[6][0]=1284;
-		spawns[6][1]=16;
-		spawns[6][2]=665;
-		spawns[7][0]=620;
-		spawns[7][1]=352;
-		spawns[7][2]=793;
-		spawns[8][0]=528;
-		spawns[8][1]=992;
-		spawns[8][2]=793;
-		spawns[9][0]=1318;
-		spawns[9][1]=1604;
-		spawns[9][2]=857;
-		spawns[10][0]=10;
-		spawns[10][1]=4104;
-		spawns[10][2]=670;
-			
-			
-	    /*
+		spawns[0][0]=1157;
+		spawns[0][1]=666;
+		spawns[0][2]=872;
+		spawns[1][0]=179;
+		spawns[1][1]=489;
+		spawns[1][2]=792;
+		spawns[2][0]=-20;
+		spawns[2][1]=904;
+		spawns[2][2]=492;
+		spawns[3][0]=-15.375;
+		spawns[3][1]=380.5;
+		spawns[3][2]=684;
+		spawns[4][0]=779;
+		spawns[4][1]=563;
+		spawns[4][2]=800;
+		spawns[5][0]=1275;
+		spawns[5][1]=301.25;
+		spawns[5][2]=684;
+		spawns[6][0]=1863;
+		spawns[6][1]=671;
+		spawns[6][2]=546;
+		spawns[7][0]=1632.5;
+		spawns[7][1]=35.125;
+		spawns[7][2]=684;
+		spawns[8][0]=1309;
+		spawns[8][1]=1618;
+		spawns[8][2]=866;
+		spawns[9][0]=1229;
+		spawns[9][1]=-228;
+		spawns[9][2]=670;
+		spawns[10][0]=1275;
+		spawns[10][1]=301.25;
+		spawns[10][2]=684;
+		spawns[11][0]=519;
+		spawns[11][1]=976;
+		spawns[11][2]=800;
+		
+		spawns[12][0]=1097;
+		spawns[12][1]=626;
+		spawns[12][2]=372;
+		spawns[13][0]=692;
+		spawns[13][1]=814;
+		spawns[13][2]=372;
+		spawns[14][0]=1314;
+		spawns[14][1]=998;
+		spawns[14][2]=674;
+		spawns[15][0]=1457;
+		spawns[15][1]=1069;
+		spawns[15][2]=940;
+		spawns[16][0]=1181;
+		spawns[16][1]=738;
+		spawns[16][2]=940;
+		spawns[17][0]=1890;
+		spawns[17][1]=-56;
+		spawns[17][2]=940;
+		spawns[18][0]=1117;
+		spawns[18][1]=-68;
+		spawns[18][2]=940;
+	    spawns[19][0]=478;
+		spawns[19][1]=445;
+		spawns[19][2]=636;
+		spawns[20][0]=-18;
+		spawns[20][1]=392;
+		spawns[20][2]=684;
+		spawns[21][0]=730;
+		spawns[21][1]=1162;
+		spawns[21][2]=876;
+		spawns[22][0]=1196;
+		spawns[22][1]=1200;
+		spawns[22][2]=812;
+		spawns[23][0]=1457;
+		spawns[23][1]=1724;
+		spawns[23][2]=812;
+		spawns[24][0]=1348;
+		spawns[24][1]=1242;
+		spawns[24][2]=940;
+		spawns[25][0]=1695;
+		spawns[25][1]=290;
+		spawns[25][2]=556;
+		spawns[26][0]=1910;
+		spawns[26][1]=-187;
+		spawns[26][2]=674;
+		spawns[27][0]=1442;
+		spawns[27][1]=-193;
+		spawns[27][2]=674;
+		
+		/*
 			Great use of variables. No suggested improvements here
 		*/
-
+		//gi.bprintf(PRINT_MEDIUM,"%s","spawns set end check");
 		if(level.monsters_killed>=level.monsters_remaining)
 		{
-			gi.bprintf(PRINT_MEDIUM,"%s %d %s","wave ",level.wave_number, " completed");
+			//gi.bprintf(PRINT_MEDIUM,"%s %d %s","wave ",level.wave_number, " completed");
 			level.wave_number++;
 			level.monsters_spawned=0;
 			level.monsters_killed=0;
+			level.boss_spawned = 0;
 			timer=G_Spawn();
 			timer->takedamage=DAMAGE_NO;
 			timer->movetype=MOVETYPE_NONE;
@@ -399,30 +481,45 @@ void spawn_monsters(edict_t *wave){
 			timer->nextthink=level.time + 20;
 			gi.linkentity(timer);
 			G_FreeEdict(wave);
+			
+			for (i=0 ; i<game.maxclients ; i++)
+			{
+				cl_ent=g_edicts + 1 + i;
+				if((cl_ent->inuse) && (cl_ent->deadflag))
+				{
+					respawn(cl_ent);
+				}
+			}
 		}else{
 			//Cool idea. Good implementation. Especially the AI check and health multiplier
 			 
 			 //otherwise spawn chaff
-				if((level.wave_number%10 == 0)&&(level.monsters_spawned<1))// spawn boss
+		
+			if((level.wave_number%10 == 0)&&(level.boss_spawned==0))// spawn boss
 			{
-
-				if(level.monsters_spawned<level.monsters_remaining){
+			
+			
 				monster=G_Spawn();
-				rando = (random()*11)-1 ;
+				rando = (random()*2)-1 ;
 				VectorCopy(spawns[rando],monster->s.origin);
 				rando=random()*3;
 				switch (rando)
 				{
 					case 1:
 						SP_monster_supertank(monster);
+						monster->mtype=50;
 						break;
 					case 2:
 						SP_monster_jorg(monster);
+						monster->mtype=75;
 						break;
 					case 3:
-						SP_monster_boss3_stand(monster);
+						SP_monster_boss2(monster);
+						monster->mtype=30;
 						break;
 					default:
+						SP_monster_boss2(monster);
+						monster->mtype=30;
 						break;
 				}
 				
@@ -430,65 +527,74 @@ void spawn_monsters(edict_t *wave){
 				monster->health+= level.wave_number*100;
 				 monster->monsterinfo.aiflags |= (AI_BRUTAL&AI_PURSUE_NEXT);
 				 rando=findSafeSpawn(monster);
-				 while (rando==1){ //makes sure a boss spawns on first call
-					rando = (random()*11)-1 ;
-					VectorCopy(spawns[rando],monster->s.origin);
-					 rando=findSafeSpawn(monster);
+				 if (rando==1){
+				  gi.linkentity(monster);
+				level.monsters_spawned++;
+				level.boss_spawned=1;
+				 }else{
+					 G_FreeEdict(monster);
+				 
 				 }
-				 gi.linkentity(monster);
-					level.monsters_spawned++;
-				}
+				 
 			}
-				i=((level.monsters_remaining-level.monsters_spawned)/4);
-				if (i==0)
+			
+				if((level.monsters_remaining-level.monsters_spawned)>5)
 				{
-					i=((level.monsters_remaining-level.monsters_spawned)%4);
+					i=5;
+				}else{
+				i=level.monsters_remaining-level.monsters_spawned;
 				}
 				for(n=0;n<i;n++)
 				{
 					monster = G_Spawn();
-					rando = random()*12;//random monster spawn, cool idea
+					rando = random()*13;//random monster spawn, cool idea
 						
 						if (level.wave_number%12 <6)
 						{rando=rando/2;}
 
-						gi.bprintf(PRINT_MEDIUM,"%s %d /n","rando",rando);	
+						//gi.bprintf(PRINT_MEDIUM,"%s %d /n","rando",rando);	
 						switch(rando)
 							{
 							case 1:
 								{
-									gi.bprintf(PRINT_MEDIUM,"%s","spawning flyer");
+									//gi.bprintf(PRINT_MEDIUM,"%s","spawning flyer");
 									SP_monster_flyer(monster);
+									monster->mtype=2;
 									break;
 								}
 							case 2:
 								{
-									gi.bprintf(PRINT_MEDIUM,"%s","spawning soldier");
+									//gi.bprintf(PRINT_MEDIUM,"%s","spawning soldier");
 									SP_monster_soldier_light(monster);							;
+									monster->mtype=3;
 									break;
 								}
 							case 3:
 								{
-									gi.bprintf(PRINT_MEDIUM,"%s","spawning sssoldier");
+									//gi.bprintf(PRINT_MEDIUM,"%s","spawning sssoldier");
 									SP_monster_soldier_ss(monster);	
+									monster->mtype=4;
 									break;
 								}
 							case 4:
 								{
-								gi.bprintf(PRINT_MEDIUM,"%s","spawning gunner");
+								//gi.bprintf(PRINT_MEDIUM,"%s","spawning gunner");
 								SP_monster_infantry(monster);
+								monster->mtype=5;
 								break;
 								}
 							case 5:
 								{
-								gi.bprintf(PRINT_MEDIUM,"%s","spawning flyer2");
+								//gi.bprintf(PRINT_MEDIUM,"%s","spawning flyer2");
 								SP_monster_soldier(monster);
+								monster->mtype=6;
 								break;
 								}
 							case 6:
 								{
 								//gi.bprintf(PRINT_MEDIUM,"%s","spawning chick");
 								SP_monster_hover(monster);
+								monster->mtype=7;
 								break;
 								}
 							case 7:
@@ -496,41 +602,53 @@ void spawn_monsters(edict_t *wave){
 								//gi.bprintf(PRINT_MEDIUM,"%s","spawning gunner");
 								
 									SP_monster_chick(monster);
+									monster->mtype=8;
 								break;
 								}
 							case 8:
 								{
 								//gi.bprintf(PRINT_MEDIUM,"%s","spawning gunner");
 								SP_monster_medic(monster);
+								monster->mtype=9;
 								break;
 								}
 							case 9:
 								{
 								//gi.bprintf(PRINT_MEDIUM,"%s","spawning lgt soldier");
 								SP_monster_brain(monster);
+								monster->mtype=10;
 								break;
 								}
 							case 11:
 								{
 								//gi.bprintf(PRINT_MEDIUM,"%s","spawning lgt soldier");
 								SP_monster_parasite(monster);
+								monster->mtype=11;
 								break;
 								}
 							case 12:
 								{
 								//gi.bprintf(PRINT_MEDIUM,"%s","spawning lgt soldier");
 								SP_monster_tank(monster);
+								monster->mtype=13;
 								break;
+								}
+								case 13:
+								{
+									//gi.bprintf(PRINT_MEDIUM,"%s","spawning flyer");
+									SP_monster_gunner(monster);
+									monster->mtype=12;
+									break;
 								}
 							
 							default:
-								gi.bprintf(PRINT_MEDIUM,"%s","defaults spawn tank");
+								//gi.bprintf(PRINT_MEDIUM,"%s","defaults spawn tank");
 									SP_monster_berserk(monster);
+									monster->mtype=3;
 								break;
 							}
-						rando = (random()*10)-1;
-						//temp[YAW]=random()*360;
-						//AngleVectors(temp,look,NULL,NULL);
+						rando = (random()*28)-1;
+						
 						monster->s.angles[YAW]=random()*360;
 						VectorCopy(spawns[rando],monster->s.origin);
 						monster->health+= level.wave_number*5;
@@ -540,14 +658,48 @@ void spawn_monsters(edict_t *wave){
 				 {	 
 					 
 					 gi.linkentity(monster);
+					// gi.bprintf(PRINT_MEDIUM," %s","name ",monster->classname);
 					level.monsters_spawned++;
+					
 					
 				}else{
 					G_FreeEdict(monster);//good check, very important part that could cause problems if left out
 				}
 				}
+			rando=0;
+				n=0;
+		for (i=0 ; i<game.maxclients ; i++)
+			{
+				cl_ent=g_edicts + 1 + i;
+				if((cl_ent->inuse))
+				{
+					n++;
+					if(cl_ent->deadflag)
+					{
+						rando++;
+					}
+				}
+			}
+		if(rando == n)
+		{
 			
-		
+			killmonsters();
+			level.wave_number=0;
+			level.monsters_killed=0;
+			level.monsters_remaining=0;
+			level.monsters_spawned=0;
+			level.boss_spawned=0;
+			
+			for (i=0 ; i<game.maxclients ; i++)
+			{
+				cl_ent=g_edicts + 1 + i;
+				if((cl_ent->inuse) && (cl_ent->deadflag))
+				{
+					respawn(cl_ent);
+				}
+			}
+		G_FreeEdict(wave);
+		}
 		wave->nextthink= level.time+10;
 	}
 	
@@ -561,6 +713,8 @@ void start_Wave(edict_t *timer){
 		level.monsters_remaining = 10*level.wave_number ;
 		level.monsters_spawned =0;
 		level.monsters_killed=0;
+		level.boss_spawned=0;
+		//gi.bprintf(PRINT_MEDIUM,"%s","spawning wave");
 		wave=G_Spawn();
 		
 		
@@ -575,6 +729,7 @@ void start_Wave(edict_t *timer){
 		gi.linkentity(wave);
 	G_FreeEdict(timer);
 }
+//debuginh function for testing various bits
   void Cmd_Compass_f (edict_t *ent) 
 
   { edict_t *monster;
@@ -582,6 +737,7 @@ void start_Wave(edict_t *timer){
   spawn[0] = 1217.75;
   spawn[1] = 685.75;
   spawn[2] = 472.125;
+  ent->client->resp.ap=50;
 	//monster=G_Spawn();
 	//VectorCopy(spawn,monster->s.origin);
 				//SP_monster_medic(monster);
@@ -590,9 +746,9 @@ void start_Wave(edict_t *timer){
 				// monster->monsterinfo.aiflags |= (AI_BRUTAL&AI_PURSUE_NEXT);
 				//gi.linkentity(monster);
 
-				gi.cprintf (ent, PRINT_HIGH, "%g %g %g %s %d %s %d %s %d %s %d\n",ent->s.origin[0], ent->s.origin[1], 
+				gi.cprintf (ent, PRINT_HIGH, "%g %g %g %s %d %s %d %s %d %s %d %s %d %s %s\n",ent->s.origin[0], ent->s.origin[1], 
 
-					ent->s.origin[2],"remaining",level.monsters_remaining,"spawned",level.monsters_spawned,"wave",level.wave_number, " killed",level.monsters_killed);  //should be one line 
+					ent->s.origin[2],"remaining",level.monsters_remaining,"spawned",level.monsters_spawned,"wave",level.wave_number, " killed",level.monsters_killed,"experience",ent->client->resp.exp,"level ", ent->client->pers.weapon->classname);  //should be one line 
 
   }
   //kicks off the first wave of enemies
@@ -604,10 +760,12 @@ void Cmd_Startwave (edict_t *ent){
 	}
 	else
 	{
+		level.boss_spawned =0;
 		gi.bprintf(PRINT_MEDIUM,"%s","starting first wave in 20 seconds");
 		level.wave_number = 1;
+		//gi.bprintf(PRINT_MEDIUM,"%s","wave 9");
 		timer=G_Spawn();
-		
+		//gi.bprintf(PRINT_MEDIUM,"%s","timer");
 		
 		timer->takedamage=DAMAGE_NO;
 		timer->movetype=MOVETYPE_NONE;
@@ -617,6 +775,7 @@ void Cmd_Startwave (edict_t *ent){
 		VectorClear(timer->maxs);
 		timer->think=start_Wave;
 		timer->nextthink=level.time + 20;
+		//gi.bprintf(PRINT_MEDIUM,"%s","timer linking");
 		gi.linkentity(timer);
 	}
 }
@@ -792,6 +951,13 @@ Cmd_InvUse_f
 void Cmd_InvUse_f (edict_t *ent)
 {
 	gitem_t		*it;
+   if (ent->client->showmenu)
+   {
+      Menu_Sel(ent);
+      return;
+   }
+
+	
 
 	ValidateSelectedItem (ent);
 
@@ -1201,6 +1367,162 @@ void Cmd_PlayerList_f(edict_t *ent)
 ClientCommand
 =================
 */
+void upgrade_Sel(edict_t *ent, int choice)
+{
+
+	
+	switch (choice)
+	{
+	case 0:
+		if(ent->client->resp.ap>=5)
+		{
+		
+			ent->client->resp.ap-=5;
+		
+			if(!(ent->client->resp.speedmod)){
+				ent->client->resp.speedmod = 1;}
+			else{
+			ent->client->resp.speedmod++;
+			}
+		}else
+			gi.cprintf (ent, PRINT_HIGH, "%s","you can't afford that");
+		break;
+		case 1:
+		if(ent->client->resp.ap>=5)
+		{
+		
+			ent->client->resp.ap-=5;
+		
+			if(!(ent->client->resp.damagemod)){
+				ent->client->resp.damagemod = 1;}
+			else{
+			ent->client->resp.damagemod++;
+			}
+		}else
+			gi.cprintf (ent, PRINT_HIGH, "%s","you can't afford that");
+		break;
+		case 2:
+		if(ent->client->resp.ap>=5)
+		{
+		
+			ent->client->resp.ap-=5;
+		
+			if(!(ent->client->resp.jumpmod)){
+				ent->client->resp.jumpmod = 1;}
+			else{
+			ent->client->resp.jumpmod++;
+			}
+		}else
+			gi.cprintf (ent, PRINT_HIGH, "%s","you can't afford that");
+
+		break;
+		case 3:
+		if(ent->client->resp.ap>=5)
+		{
+		
+			ent->client->resp.ap-=5;
+		
+			if(!(ent->client->resp.kickmod)){
+				ent->client->resp.kickmod = 1;}
+			else{
+			ent->client->resp.kickmod++;
+			}
+		}else
+			gi.cprintf (ent, PRINT_HIGH, "%s","you can't afford that");
+		break;
+		case 4:
+		if(ent->client->resp.ap>=10)
+		{
+		
+			ent->client->resp.ap-=10;
+			ent->max_health+=10;
+			
+		}else
+			gi.cprintf (ent, PRINT_HIGH, "%s","you can't afford that");
+		break;/*case 1:
+		if(ent->client->resp.ap>5){
+		ent->client->resp.ap-=5;
+		if(!(ent->client->resp.damagemod))
+			ent->client->resp.damagemod =1;
+		else
+		ent->client->resp.damagemod++;
+
+		}
+		break;
+	case 2:
+		if(ent->client->resp.ap>5){
+		ent->client->resp.ap-=5;
+		if(!(ent->client->resp.jumpmod)){
+			ent->client->resp.jumpmod =1;}
+		else{
+		ent->client->resp.jumpmod++;
+		}
+		}
+		break;
+	case 3:
+		if(ent->client->resp.ap>5){
+		ent->client->resp.ap-=5;
+		if(!(ent->client->resp.kickmod))
+			ent->client->resp.kickmod =1;
+		else
+		ent->client->resp.kickmod++;
+
+		}
+		break;
+	case 4:
+		gi.cprintf (ent, PRINT_HIGH, "point\n");
+		ent->s.frame = FRAME_point01-1;
+		ent->client->anim_end = FRAME_point12;
+		break;*/
+	}
+
+	} 
+
+void Cmd_upgrade_menu(edict_t *ent)
+{
+
+char buffer1[3];
+char buffer2[5];
+char buffer3[3];
+char buffer4[2];
+char str[27];
+int n ;
+sprintf(buffer1,"%u", level.wave_number);
+sprintf(buffer2,"%u", level.monsters_remaining-level.monsters_killed);
+sprintf(buffer3,"%u", ent->client->resp.lvl);
+sprintf(buffer4,"%u", ent->client->resp.ap);
+
+strcpy (str,"w: ");
+strcat (str,buffer1);
+strcat (str, " m:");
+strcat (str,buffer2);
+strcat (str," lvl ");
+strcat (str,buffer3);
+strcat (str," points :");
+strcat (str,buffer4);
+   // Check to see if the menu is already open
+
+   if (ent->client->showscores || ent->client->showinventory || 
+        ent->client->showmenu || ent->client->showmsg)
+        return;
+
+   // send the layout
+  
+   
+   Menu_Title(ent,str);
+   Menu_Add(ent,"upgrd speed      : 5  pts");
+   Menu_Add(ent,"upgrd damage     : 5  pts");
+   Menu_Add(ent,"upgrd jump       : 5  pts");
+   Menu_Add(ent,"upgrd kick       : 5  pts");
+   Menu_Add(ent,"upgrd max health : 10 pts");
+
+    // Setup the User Selection Handler
+
+   ent->client->usr_menu_sel = upgrade_Sel;
+   Menu_Open(ent);
+
+}
+
 void ClientCommand (edict_t *ent)
 {
 	char	*cmd;
@@ -1285,6 +1607,10 @@ void ClientCommand (edict_t *ent)
 		Cmd_Compass_f (ent); 
 	else if (Q_stricmp(cmd, "playerlist") == 0)
 		Cmd_PlayerList_f(ent);
+	else if (Q_stricmp (cmd, "menu") == 0)
+		Menu_Hlp(ent);
+	else if (Q_stricmp (cmd, "upgrade") == 0)
+		 Cmd_upgrade_menu(ent);
 	else	// anything that doesn't match a command will be a chat
 		Cmd_Say_f (ent, false, true);
 }

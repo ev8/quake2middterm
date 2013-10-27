@@ -202,6 +202,15 @@ void EndDMLevel (void)
 	edict_t		*ent;
 	char *s, *t, *f;
 	static const char *seps = " ,\n\r";
+	int i;
+
+	// ++QMENU++
+
+	for (i=0 ; i<game.maxclients ; i++)
+	{
+		ent = g_edicts + 1 + i;
+		Menu_Close(ent);
+	}
 
 	// stay on same level flag
 	if ((int)dmflags->value & DF_SAME_LEVEL)

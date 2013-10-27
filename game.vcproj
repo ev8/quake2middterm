@@ -2161,6 +2161,10 @@
 					/>
 				</FileConfiguration>
 			</File>
+			<File
+				RelativePath=".\QMENU.C"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -2268,6 +2272,10 @@
 			</File>
 			<File
 				RelativePath="q_shared.h"
+				>
+			</File>
+			<File
+				RelativePath=".\QMENU.H"
 				>
 			</File>
 		</Filter>

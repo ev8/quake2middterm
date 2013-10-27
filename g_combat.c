@@ -70,6 +70,69 @@ qboolean CanDamage (edict_t *targ, edict_t *inflictor)
 Killed
 ============
 */
+void lvlupsparks(edict_t *sparks){
+	vec3_t dir;
+	dir[0]=0;
+	dir[1]=0;
+	dir[2]=5;
+	gi.WriteByte (svc_temp_entity);
+	gi.WriteByte (TE_SCREEN_SPARKS);
+	gi.WritePosition(sparks->owner->s.origin); 
+	gi.WriteDir(dir);
+	
+	if(!(sparks->animation))
+		sparks->animation=1;
+	else
+		sparks->animation++;
+
+	if(sparks->animation>5)
+	{
+		gi.sound(sparks->owner, CHAN_VOICE, gi.soundindex("misc/power1.wav"), 1.0, ATTN_IDLE, 0.0);
+		G_FreeEdict(sparks);
+		sparks->animation = NULL;
+	}
+	sparks->nextthink=level.time + .10;
+}
+// levels up the player/ heals them and plays alittle animation and sound
+void levelup(edict_t *ent){
+	edict_t *effect;
+	ent->client->resp.lvl++;
+	ent->health=ent->client->pers.max_health;
+	if(!(ent->client->resp.ap))
+	{
+		ent->client->resp.ap=5;
+	}
+	else
+	{
+		ent->client->resp.ap+=5;	
+	}
+		effect=G_Spawn();
+		effect->owner=ent;
+		effect->takedamage=DAMAGE_NO;
+		effect->movetype=MOVETYPE_NONE;
+		effect->solid = SOLID_NOT;
+		VectorCopy(ent->s.origin,effect->s.origin) ;
+		VectorClear(effect->mins);
+		VectorClear(effect->maxs);
+		effect->think=lvlupsparks;
+		effect->nextthink=level.time + .10;
+		gi.bprintf(PRINT_MEDIUM,"%s %s %d",ent->client->pers.userinfo," has reached level ",ent->client->resp.lvl);
+		gi.linkentity(effect);
+}
+// checks to see if the player has gained enough experience
+void checklvlup(edict_t *ent){
+	int n,m;
+	if(ent->client->resp.lvl)
+	{
+	n = ent->client->resp.lvl;
+	m = ((ent->client->resp.exp)/100);
+		if(m>n)
+			levelup(ent);
+	}else{
+	ent->client->resp.lvl=1;
+	}
+	}
+
 void Killed (edict_t *targ, edict_t *inflictor, edict_t *attacker, int damage, vec3_t point)
 {
 	if (targ->health < -999)
@@ -85,8 +148,13 @@ void Killed (edict_t *targ, edict_t *inflictor, edict_t *attacker, int damage, v
 			level.monsters_killed++;
 			if(attacker->client)
 			{
-				attacker->client->resp.exp++;
-			}
+			
+					attacker->client->resp.exp+= targ->mtype*level.wave_number;
+					checklvlup( attacker);
+					attacker->client->resp.score++;
+				}
+
+			
 			level.killed_monsters++;
 			if (coop->value && attacker->client)
 				attacker->client->resp.score++;
@@ -368,7 +436,16 @@ void T_Damage (edict_t *targ, edict_t *inflictor, edict_t *attacker, vec3_t dir,
 	int			asave;
 	int			psave;
 	int			te_sparks;
+	if(attacker->client)
+	{
+		knockback= knockback *(float)(1+((float)attacker->client->resp.kickmod/10));
+		damage = damage *(float)(1+((float)attacker->client->resp.kickmod/10));
+	}
+	if(targ->client)
+	{
+		damage = damage + level.wave_number;// enemies hit harder as you progress
 
+	}
 	if (!targ->takedamage)
 		return;
 

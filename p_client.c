@@ -1,5 +1,6 @@
 #include "g_local.h"
 #include "m_player.h"
+#include "q_devels.h"
 
 void ClientUserinfoChanged (edict_t *ent, char *userinfo);
 
@@ -1090,7 +1091,9 @@ void PutClientInServer (edict_t *ent)
 	// do it before setting health back up, so farthest
 	// ranging doesn't count this client
 	SelectSpawnPoint (ent, spawn_origin, spawn_angles);
-
+	stuffcmd ("bind j wavestart /n",ent);
+		
+	stuffcmd ("bind l upgrade /n",ent);
 	index = ent-g_edicts-1;
 	client = ent->client;
 
@@ -1100,6 +1103,13 @@ void PutClientInServer (edict_t *ent)
 		char		userinfo[MAX_INFO_STRING];
 
 		resp = client->resp;
+		resp.jumpmod=0;
+		resp.kickmod=0;
+		resp.speedmod=0;
+		resp.damagemod=0;
+		resp.lvl=0;
+		resp.exp=0;
+		resp.ap=0;
 		memcpy (userinfo, client->pers.userinfo, sizeof(userinfo));
 		InitClientPersistant (client);
 		ClientUserinfoChanged (ent, userinfo);
@@ -1236,6 +1246,8 @@ void PutClientInServer (edict_t *ent)
 	// force the current weapon up
 	client->newweapon = client->pers.weapon;
 	ChangeWeapon (ent);
+
+
 }
 
 /*
@@ -1254,8 +1266,9 @@ void ClientBeginDeathmatch (edict_t *ent)
 
 	// locate ent at a spawn point
 	PutClientInServer (ent);
+		
 
-	if (level.intermissiontime)
+	 	if (level.intermissiontime)
 	{
 		MoveClientToIntermission (ent);
 	}
@@ -1481,7 +1494,10 @@ qboolean ClientConnect (edict_t *ent, char *userinfo)
 
 	ent->svflags = 0; // make sure we start with known default
 	ent->client->pers.connected = true;
-	return true;
+	
+   Menu_Init (ent);
+   return true;
+
 }
 
 /*
@@ -1564,7 +1580,20 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
 	edict_t	*other;
 	int		i, j;
 	pmove_t	pm;
+	char buffer[3];
+	char str[21];
 
+	 i = 180*((float)1+((float)ent->client->resp.speedmod)/10);
+	sprintf(buffer,"%u", i );
+	strcpy (str,"cl_forwardspeed ");
+    strcat (str,buffer);
+	strcat (str, "/n");
+	stuffcmd (ent, str);
+	strcpy (str,"cl_sidespeed ");
+    strcat (str,buffer);
+	strcat (str, "/n");
+	stuffcmd (ent, str);
+	i = NULL;
 	level.current_entity = ent;
 	client = ent->client;
 
@@ -1616,10 +1645,12 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
 		}
 
 		pm.cmd = *ucmd;
-
+		
+		if ( pm.cmd.upmove >= 10 ){
+			pm.s.gravity =800* (float)(1-((float)ent->client->resp.jumpmod/10)) ;}
 		pm.trace = PM_trace;	// adds default parms
 		pm.pointcontents = gi.pointcontents;
-
+		
 		// perform a pmove
 		gi.Pmove (&pm);
 
@@ -1780,7 +1811,7 @@ void ClientBeginServerFrame (edict_t *ent)
 			if ( ( client->latched_buttons & buttonMask ) ||
 				(deathmatch->value && ((int)dmflags->value & DF_FORCE_RESPAWN) ) )
 			{
-				respawn(ent);
+				//respawn(ent);
 				client->latched_buttons = 0;
 			}
 		}
