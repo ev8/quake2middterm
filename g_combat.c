@@ -96,15 +96,17 @@ void lvlupsparks(edict_t *sparks){
 // levels up the player/ heals them and plays alittle animation and sound
 void levelup(edict_t *ent){
 	edict_t *effect;
-	ent->client->resp.lvl++;
-	ent->health=ent->client->pers.max_health;
+	int n;
+	n = (ent->client->resp.exp/100)- (ent->client->resp.lvl);
+		ent->client->resp.lvl=(ent->client->resp.exp)/100;
+		ent->health=ent->client->pers.max_health;
 	if(!(ent->client->resp.ap))
 	{
-		ent->client->resp.ap=5;
+		ent->client->resp.ap=(n*5);
 	}
 	else
 	{
-		ent->client->resp.ap+=5;	
+		ent->client->resp.ap+=(n*5);	
 	}
 		effect=G_Spawn();
 		effect->owner=ent;

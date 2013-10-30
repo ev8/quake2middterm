@@ -462,10 +462,10 @@ void spawn_monsters(edict_t *wave){
 		/*
 			Great use of variables. No suggested improvements here
 		*/
-		//gi.bprintf(PRINT_MEDIUM,"%s","spawns set end check");
+		gi.bprintf(PRINT_MEDIUM,"%s","spawning monsters");
 		if(level.monsters_killed>=level.monsters_remaining)
 		{
-			//gi.bprintf(PRINT_MEDIUM,"%s %d %s","wave ",level.wave_number, " completed");
+			gi.bprintf(PRINT_MEDIUM,"%s %d %s","wave ",level.wave_number, " completed");
 			level.wave_number++;
 			level.monsters_spawned=0;
 			level.monsters_killed=0;
@@ -1369,11 +1369,16 @@ ClientCommand
 */
 void upgrade_Sel(edict_t *ent, int choice)
 {
-
+	char buffer[3];
+	char str[21];
+	int i;
 	
 	switch (choice)
 	{
 	case 0:
+		
+
+
 		if(ent->client->resp.ap>=5)
 		{
 		
@@ -1383,6 +1388,16 @@ void upgrade_Sel(edict_t *ent, int choice)
 				ent->client->resp.speedmod = 1;}
 			else{
 			ent->client->resp.speedmod++;
+				 i = 200*((float)1+((float)ent->client->resp.speedmod)/10);
+				sprintf(buffer,"%u", i );
+				strcpy (str,"cl_forwardspeed ");
+				strcat (str,buffer);
+				strcat (str, "/n");
+				stuffcmd (ent, str);
+				strcpy (str,"cl_sidespeed ");
+				strcat (str,buffer);
+				strcat (str, "/n");
+				stuffcmd (ent, str);
 			}
 		}else
 			gi.cprintf (ent, PRINT_HIGH, "%s","you can't afford that");

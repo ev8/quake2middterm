@@ -1580,19 +1580,7 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
 	edict_t	*other;
 	int		i, j;
 	pmove_t	pm;
-	char buffer[3];
-	char str[21];
 
-	 i = 180*((float)1+((float)ent->client->resp.speedmod)/10);
-	sprintf(buffer,"%u", i );
-	strcpy (str,"cl_forwardspeed ");
-    strcat (str,buffer);
-	strcat (str, "/n");
-	stuffcmd (ent, str);
-	strcpy (str,"cl_sidespeed ");
-    strcat (str,buffer);
-	strcat (str, "/n");
-	stuffcmd (ent, str);
 	i = NULL;
 	level.current_entity = ent;
 	client = ent->client;
