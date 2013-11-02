@@ -118,7 +118,7 @@ void levelup(edict_t *ent){
 		VectorClear(effect->maxs);
 		effect->think=lvlupsparks;
 		effect->nextthink=level.time + .10;
-		gi.bprintf(PRINT_MEDIUM,"%s %s %d",ent->client->pers.userinfo," has reached level ",ent->client->resp.lvl);
+		gi.bprintf(PRINT_MEDIUM,"%s %s %d",ent->client->pers.netname," has reached level ",ent->client->resp.lvl);
 		gi.linkentity(effect);
 }
 // checks to see if the player has gained enough experience
