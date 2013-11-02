@@ -1,14 +1,17 @@
-this mod turns quake 2's deathmatch mode into a invasion/ survival mode.
+This mod turns quake 2's deathmatch into a survival/ invasion game mode
 
-enemies spawn in waves gradually getting harder.
-killing enemies gives the players exp that levels up the player.
-they gain level up points that they can spend upgrading thier abilities.
+bind functions wavestart and upgrade 
 
-pressing g begins the game, players can collect all the items they want before begining.
+wave start begins the game, in twenty seconds enemeies will start spawning, the wave ends when all monsters have been defeated
+players will then be given a 20 second grace period to gather supplies ,ammo and  health before the next awave begins.
 
-pressing l brings up the levelup menu
-use [ ] to navigate the menu and enter to select an option.
+killing monsters grants the player experience points, get enough and you level up. 
+leveling up gives you ability points which you can use to buy upgrades to your basic abilities
+pressing the upgrade key will bring up a menu with avialable upgrades and cost
+the top line represents
+wave number ,monsters left ,player level ,ability points
+use [ and ] to navigate the menu and enter to select an item, esc closes the menu
 
-every tenth wave is a boss with really hard enemies and one super powered boss enemy
+unfortunately this mod is hard coded for the map edge, 
 
-the spawning in my mod is unfortunately hard coded for the edge deathmatch map
+credit for the menu code goes to online gaming technologies and the qdevels get credit for thier utility functions

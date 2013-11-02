@@ -1091,17 +1091,16 @@ void PutClientInServer (edict_t *ent)
 	// do it before setting health back up, so farthest
 	// ranging doesn't count this client
 	SelectSpawnPoint (ent, spawn_origin, spawn_angles);
-	stuffcmd ("bind j wavestart /n",ent);
-		
-	stuffcmd ("bind l upgrade /n",ent);
 	index = ent-g_edicts-1;
 	client = ent->client;
-
+	
+//Emmanuel Velez ev8
+//wipes player stats when they die
 	// deathmatch wipes most client data every spawn
 	if (deathmatch->value)
 	{
 		char		userinfo[MAX_INFO_STRING];
-
+		stuffcmd (ent,"cl_forwardspeed 200 /n");// this resets the move speed for the player serverside
 		resp = client->resp;
 		resp.jumpmod=0;
 		resp.kickmod=0;
@@ -1110,6 +1109,7 @@ void PutClientInServer (edict_t *ent)
 		resp.lvl=0;
 		resp.exp=0;
 		resp.ap=0;
+		ent->max_health=100;
 		memcpy (userinfo, client->pers.userinfo, sizeof(userinfo));
 		InitClientPersistant (client);
 		ClientUserinfoChanged (ent, userinfo);
@@ -1633,7 +1633,8 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
 		}
 
 		pm.cmd = *ucmd;
-		
+		//Emmanuel Velez
+		// using the jump mod stat to modify the gravity on the player to simulate higher jumps
 		if ( pm.cmd.upmove >= 10 ){
 			pm.s.gravity =800* (float)(1-((float)ent->client->resp.jumpmod/10)) ;}
 		pm.trace = PM_trace;	// adds default parms

@@ -135,6 +135,9 @@ void checklvlup(edict_t *ent){
 	}
 	}
 
+//Emmanuel Velez ev8
+//edited killed to reward players with experience when they kill a monster;
+
 void Killed (edict_t *targ, edict_t *inflictor, edict_t *attacker, int damage, vec3_t point)
 {
 	if (targ->health < -999)
@@ -438,10 +441,13 @@ void T_Damage (edict_t *targ, edict_t *inflictor, edict_t *attacker, vec3_t dir,
 	int			asave;
 	int			psave;
 	int			te_sparks;
+	
+//Emmanuel Velez ev8
+//this bit of code tacks on the player bought modifiers for damage and kick to the damge
 	if(attacker->client)
 	{
-		knockback= knockback *(float)(1+((float)attacker->client->resp.kickmod/10));
-		damage = damage *(float)(1+((float)attacker->client->resp.kickmod/10));
+		knockback= (float)knockback *(float)(1+((float)attacker->client->resp.kickmod/10));
+		damage = (float)damage *(float)(1+((float)attacker->client->resp.damagemod/10));
 	}
 	if(targ->client)
 	{

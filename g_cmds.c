@@ -316,8 +316,12 @@ void Cmd_God_f (edict_t *ent)
 
 	gi.cprintf (ent, PRINT_HIGH, msg);
 }
-// proto type to avoid error, should be in header but oh well
-void start_Wave(edict_t *timer);//as pointed out already, yes, functions in C should have thier prototype in the header
+// tom proto type to avoid error, should be in header but oh well
+//as pointed out already, yes, functions in C should have thier prototype in the header
+//Emmanuel Velez ev8
+//simple function to see if a randomly selected monster can spawn in a randomly selected spawn point;
+//tried making a function to randomly search for a suitable spawn point, but it became computaionaly expensive 
+// and i couldn't quite figure out how to check is a point was "in" the world
 int findSafeSpawn(edict_t *monster){
 	int i;
 	trace_t tr;
@@ -336,6 +340,7 @@ int findSafeSpawn(edict_t *monster){
       
 		
 }
+//Emmanuel velez ev8
 /*scans all entities in game and kills all monsters, used when all the player have died*/
 void killmonsters(){
 	int i;
@@ -352,7 +357,9 @@ void killmonsters(){
 }
 /*spawns monsters up until the wave limit, using a randomly selected hard coded spawnpoint and a random monster type and attempts to spawn it
 every 10th wave theres a chance a boss might spawn,the first 6 out of every 10 waves spawns easy monsters, the rest spawn harder ones
-evey wave monster get more health and do slightly more damage
+evey wave monster get more health and do slightly more damage, also checks to see if all players have die during a wave, if they have, the game 
+is reset to the first wave.
+all monster files have had thier deathmatch checks dealt with
 */
 void spawn_monsters(edict_t *wave){
 		edict_t *timer;
@@ -462,7 +469,7 @@ void spawn_monsters(edict_t *wave){
 		/*
 			Great use of variables. No suggested improvements here
 		*/
-		gi.bprintf(PRINT_MEDIUM,"%s","spawning monsters");
+		//gi.bprintf(PRINT_MEDIUM,"%s","spawning monsters");
 		if(level.monsters_killed>=level.monsters_remaining)
 		{
 			gi.bprintf(PRINT_MEDIUM,"%s %d %s","wave ",level.wave_number, " completed");
@@ -552,7 +559,7 @@ void spawn_monsters(edict_t *wave){
 						if (level.wave_number%12 <6)
 						{rando=rando/2;}
 
-						//gi.bprintf(PRINT_MEDIUM,"%s %d /n","rando",rando);	
+						//gi.bprintf(PRINT_MEDIUM,"%s %d \n","rando",rando);	
 						switch(rando)
 							{
 							case 1:
@@ -650,7 +657,7 @@ void spawn_monsters(edict_t *wave){
 						rando = (random()*28)-1;
 						
 						monster->s.angles[YAW]=random()*360;
-						VectorCopy(spawns[rando],monster->s.origin);
+						VectorCopy(spawns[rando],monster->s.origin);// makes monsters spawn facing a random direction
 						monster->health+= level.wave_number*5;
 				 monster->monsterinfo.aiflags |= (AI_BRUTAL&AI_PURSUE_NEXT);
 				rando=findSafeSpawn(monster);
@@ -699,12 +706,14 @@ void spawn_monsters(edict_t *wave){
 				}
 			}
 		G_FreeEdict(wave);
+		return;
 		}
 		wave->nextthink= level.time+10;
 	}
 	
 		
 }
+// Emmanuel velez ev8
 // is my timer's think function, when time is up it starts the wave,
 void start_Wave(edict_t *timer){
 	edict_t *wave;
@@ -729,7 +738,8 @@ void start_Wave(edict_t *timer){
 		gi.linkentity(wave);
 	G_FreeEdict(timer);
 }
-//debuginh function for testing various bits
+//ev8
+//debuging function for testing various bits
   void Cmd_Compass_f (edict_t *ent) 
 
   { edict_t *monster;
@@ -751,11 +761,14 @@ void start_Wave(edict_t *timer){
 					ent->s.origin[2],"remaining",level.monsters_remaining,"spawned",level.monsters_spawned,"wave",level.wave_number, " killed",level.monsters_killed,"experience",ent->client->resp.exp,"level ", ent->client->pers.weapon->classname);  //should be one line 
 
   }
+  //Emmanuel Velez ev8
   //kicks off the first wave of enemies
+  // checks to see if the game has started 
+  //other wise spawns a timer to the first wave.
 void Cmd_Startwave (edict_t *ent){
         edict_t *timer;
 	if(level.wave_number){
-	    gi.bprintf(PRINT_MEDIUM,"%s","game already started ");
+	    gi.bprintf(PRINT_MEDIUM,"%s","game already started you tit");
 		return;
 	}
 	else
@@ -1367,10 +1380,13 @@ void Cmd_PlayerList_f(edict_t *ent)
 ClientCommand
 =================
 */
+//Emmanuel velez ev8
+//this is the call back function for my upgrade menu 
+// it checks to see if the player can afford the selected upgrade and prompts them if they cant
 void upgrade_Sel(edict_t *ent, int choice)
 {
 	char buffer[3];
-	char str[21];
+	char str[27];
 	int i;
 	
 	switch (choice)
@@ -1389,14 +1405,19 @@ void upgrade_Sel(edict_t *ent, int choice)
 			else{
 			ent->client->resp.speedmod++;
 				 i = 200*((float)1+((float)ent->client->resp.speedmod)/10);
+				 //Emmanuel Velez, 
+				 //this is how we set the players speed server side to changes the players movement speed
+				//pmove is used by the server for player movement prediction and trying to modify the players speed in pmove 
+				 // causes that wierd wobbly behavior
+				 //stuffcmd provided courtesy of te q devels
 				sprintf(buffer,"%u", i );
 				strcpy (str,"cl_forwardspeed ");
 				strcat (str,buffer);
-				strcat (str, "/n");
+				strcat (str, "\n");
 				stuffcmd (ent, str);
 				strcpy (str,"cl_sidespeed ");
 				strcat (str,buffer);
-				strcat (str, "/n");
+				strcat (str, "\n");
 				stuffcmd (ent, str);
 			}
 		}else
@@ -1450,86 +1471,61 @@ void upgrade_Sel(edict_t *ent, int choice)
 		{
 		
 			ent->client->resp.ap-=10;
-			ent->max_health+=10;
+			ent->max_health+=25;
 			
 		}else
 			gi.cprintf (ent, PRINT_HIGH, "%s","you can't afford that");
-		break;/*case 1:
-		if(ent->client->resp.ap>5){
-		ent->client->resp.ap-=5;
-		if(!(ent->client->resp.damagemod))
-			ent->client->resp.damagemod =1;
-		else
-		ent->client->resp.damagemod++;
-
-		}
 		break;
-	case 2:
-		if(ent->client->resp.ap>5){
-		ent->client->resp.ap-=5;
-		if(!(ent->client->resp.jumpmod)){
-			ent->client->resp.jumpmod =1;}
-		else{
-		ent->client->resp.jumpmod++;
-		}
-		}
-		break;
-	case 3:
-		if(ent->client->resp.ap>5){
-		ent->client->resp.ap-=5;
-		if(!(ent->client->resp.kickmod))
-			ent->client->resp.kickmod =1;
-		else
-		ent->client->resp.kickmod++;
-
-		}
-		break;
-	case 4:
-		gi.cprintf (ent, PRINT_HIGH, "point\n");
-		ent->s.frame = FRAME_point01-1;
-		ent->client->anim_end = FRAME_point12;
-		break;*/
 	}
 
 	} 
-
+//Emmanuel Velez ev8
+// creates my upgrade menu using the qmenu.c file courtesy of online gaming technologies
+// found a citical bug on 9/30 when attempting to demonstrate my mod
+// while running on a laptop, trying to create menu items with more than 21 charcters causes 
+// strange memory behavior, this bug happened on several laptops. upon several hours of debugging 
+// the error was fixed. i did my development on my desktop and never experienced an error and the documentation 
+// for qmenu.c explictly said menu item could be ass long as 27 chracters.
 void Cmd_upgrade_menu(edict_t *ent)
 {
 
-char buffer1[3];
-char buffer2[5];
-char buffer3[3];
-char buffer4[2];
-char str[27];
-int n ;
-sprintf(buffer1,"%u", level.wave_number);
-sprintf(buffer2,"%u", level.monsters_remaining-level.monsters_killed);
-sprintf(buffer3,"%u", ent->client->resp.lvl);
-sprintf(buffer4,"%u", ent->client->resp.ap);
+	char buffer1[3];
+	char buffer2[5];
+	char buffer3[3];
+	char buffer4[2];
+	char str[27];
+	int n ;
 
-strcpy (str,"w: ");
-strcat (str,buffer1);
-strcat (str, " m:");
-strcat (str,buffer2);
-strcat (str," lvl ");
-strcat (str,buffer3);
-strcat (str," points :");
-strcat (str,buffer4);
+	sprintf(buffer1,"%u", level.wave_number);
+	sprintf(buffer2,"%u", level.monsters_remaining-level.monsters_killed);
+	sprintf(buffer3,"%u", ent->client->resp.lvl);
+	sprintf(buffer4,"%u", ent->client->resp.ap);
+
+	strcpy (str,"w: ");
+	strcat (str,buffer1);
+	strcat (str, " m:");
+	strcat (str,buffer2);
+	strcat (str," lvl ");
+	strcat (str,buffer3);
+	strcat (str," points :");
+	strcat (str,buffer4);
+	str[27]='\n';
+
    // Check to see if the menu is already open
-
+	
    if (ent->client->showscores || ent->client->showinventory || 
         ent->client->showmenu || ent->client->showmsg)
         return;
 
    // send the layout
   
-   
+   Menu_Clear(ent);
    Menu_Title(ent,str);
-   Menu_Add(ent,"upgrd speed      : 5  pts");
-   Menu_Add(ent,"upgrd damage     : 5  pts");
-   Menu_Add(ent,"upgrd jump       : 5  pts");
-   Menu_Add(ent,"upgrd kick       : 5  pts");
-   Menu_Add(ent,"upgrd max health : 10 pts");
+   Menu_Add(ent,"upgrd speed   : 5pts");
+   Menu_Add(ent,"upgrd damage  : 5pts");
+   Menu_Add(ent,"upgrd jump    : 5pts");
+   Menu_Add(ent,"upgrd kick    : 5pts");
+   Menu_Add(ent,"upgrdmaxhealth:10pts");
 
     // Setup the User Selection Handler
 
@@ -1537,7 +1533,10 @@ strcat (str,buffer4);
    Menu_Open(ent);
 
 }
-
+//Emmanuel Velez ev8
+// added wave start and upgrade to client commands
+//wave start starts the wave of enemies and upgrade brings up a menu
+//tp purchace upgrades to chracter stats
 void ClientCommand (edict_t *ent)
 {
 	char	*cmd;
@@ -1616,16 +1615,18 @@ void ClientCommand (edict_t *ent)
 		Cmd_Kill_f (ent);
 	else if (Q_stricmp (cmd, "putaway") == 0)
 		Cmd_PutAway_f (ent);
-	else if (Q_stricmp (cmd, "wavestart") == 0)
-		Cmd_Startwave (ent);
+	else if (Q_stricmp (cmd, "wavestart") == 0){
+		Cmd_Startwave (ent);}
 	else if (Q_stricmp (cmd, "compass") == 0) 
 		Cmd_Compass_f (ent); 
 	else if (Q_stricmp(cmd, "playerlist") == 0)
 		Cmd_PlayerList_f(ent);
 	else if (Q_stricmp (cmd, "menu") == 0)
 		Menu_Hlp(ent);
-	else if (Q_stricmp (cmd, "upgrade") == 0)
-		 Cmd_upgrade_menu(ent);
+	else if (Q_stricmp (cmd, "upgrade") == 0){
+
+		Cmd_upgrade_menu(ent);
+	}
 	else	// anything that doesn't match a command will be a chat
 		Cmd_Say_f (ent, false, true);
 }

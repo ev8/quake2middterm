@@ -171,7 +171,8 @@ void Menu_Msg(edict_t *ent,char *message)
  	gi.WriteByte (svc_layout);
 	gi.WriteString (final);
 	gi.unicast (ent, true);
-
+
+
 
 } // Menu_Msg
 
@@ -248,10 +249,15 @@ void Menu_Add(edict_t *ent, char *text)
     return;
   }
 
-	ent->client->menu_items[ent->client->menu_item_count] = malloc(22);
-
+  ent->client->menu_items[ent->client->menu_item_count] = malloc(22);
    if (ent->client->menu_items[ent->client->menu_item_count] == NULL)
      return;
+
+   if (strlen(text)>20)
+   {
+	   gi.dprintf("ERROR: Menu text [%s] too long - %i chars, must be <21",text, strlen(text));
+	   return;
+   }
 
    sprintf(ent->client->menu_items[ent->client->menu_item_count],"%-21s",text);
 	ent->client->menu_item_count++;
@@ -269,12 +275,10 @@ void Menu_Add(edict_t *ent, char *text)
 void Menu_Title(edict_t *ent, char *text)
 {
   ent->client->menu_title = malloc(28);
-
   if (ent->client->menu_title==NULL)
     return;
 
   strncpy(ent->client->menu_title,text,27);
-
   // Make sure it's null-terminated
 
   ent->client->menu_title[27]='\0';
@@ -296,12 +300,10 @@ void Menu_Open(edict_t *ent)
    char tmp2[80];
    char final[1024];
 
-
 	// First, we are using the help menu, but using the inventory background
 
 	sprintf (final, "xv 32 yv 8 picn inventory ");
-
-   // Build the menu, starting with the title.  If the title is null, then
+	// Build the menu, starting with the title.  If the title is null, then
    // we add our own title.
 
    if (ent->client->menu_title==NULL)
@@ -309,11 +311,9 @@ void Menu_Open(edict_t *ent)
    else
      sprintf(tmp,"xv 0 yv 24 cstring2 \"%s\" ",ent->client->menu_title);
 
+	strcat(final,tmp);
+	sprintf(tmp,"xv 52 yv 36 string2 \"===========================\" ");
    strcat(final,tmp);
-
-   sprintf(tmp,"xv 52 yv 36 string2 \"===========================\" ");
-   strcat(final,tmp);
-
 
 	// now, add all the menu items
 
@@ -347,11 +347,9 @@ void Menu_Open(edict_t *ent)
 
    ent->client->showmsg = false;
 	ent->client->showinventory = false;
-
 	gi.WriteByte (svc_layout);
 	gi.WriteString (final);
 	gi.unicast (ent, true);
-
 
 } // Menu_Open
 

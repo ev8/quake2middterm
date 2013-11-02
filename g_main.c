@@ -205,7 +205,8 @@ void EndDMLevel (void)
 	int i;
 
 	// ++QMENU++
-
+	// Emmanuel Velez ev8
+	// wipes out all menu items  at the end of a map
 	for (i=0 ; i<game.maxclients ; i++)
 	{
 		ent = g_edicts + 1 + i;

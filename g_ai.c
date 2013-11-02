@@ -475,7 +475,10 @@ qboolean FindTarget (edict_t *self)
 			return false;
 
 // this is where we would check invisibility
-
+//
+//Emmanuel Velez ev8
+// edited the ai so that monsters can detect enemies in all directions and without line of sight
+// this helps compinsate for the less than stellar ai
 		// is client in an spot too dark to be seen?
 		if (client->light_level <= 5)
 			return false;

@@ -312,6 +312,8 @@ typedef struct
 	int			total_goals;
 	int			found_goals;
 	int			boss_spawned;
+	//Emmanuel Velez ev8
+	// variables for mantaining state for my mod
 	int			wave_number;//keeps track of wave number in my mod
 	int         monsters_remaining; // the number of monster left in the wave, need to track wave status
 	int			monsters_spawned;// keeps a tally of the number spawned by my mod
@@ -587,6 +589,8 @@ extern	gitem_t	itemlist[];
 //
 void Cmd_Help_f (edict_t *ent);
 void Cmd_Score_f (edict_t *ent);
+//Emmanuel velez ev8  
+void start_Wave(edict_t *timer);
 
 //
 // g_items.c
@@ -854,6 +858,7 @@ typedef struct
 // client data that stays across deathmatch respawns
 typedef struct
 {
+	//Emmanuel Velez ev8
 	//int			wave_number;  // tracks the number of waves, wanted to put it in the local levle stuct but since levels are passed from the engine editing the struct made some wierd bugs
 	int			exp;	// tracks the player's experience points
 	int			lvl;		//tracks the player's level
@@ -889,7 +894,8 @@ struct gclient_s
 	qboolean	showinventory;		// set layout stat
 	qboolean	showhelp;
 	qboolean	showhelpicon;
-
+	//Emmanuel Velez ev8
+	//variables for holding menus state information
    qboolean showmenu;	// Is the menu being shown
    qboolean showmsg;		// Is a message box being shown
 
