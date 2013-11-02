@@ -15,3 +15,6 @@ use [ and ] to navigate the menu and enter to select an item, esc closes the men
 unfortunately this mod is hard coded for the map edge, 
 
 credit for the menu code goes to online gaming technologies and the qdevels get credit for thier utility functions
+
+i've also added a config file and a clean built gamex86.dll to the repo incase there are any issues
+the config file binds wave start to j and upgrade to l
